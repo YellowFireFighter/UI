@@ -2325,6 +2325,7 @@ do -- Library
         })
         --
         MultiBoxMainOutline.BackgroundTransparency = 1
+        MultiBoxMainOutline.Visible = false
         MultiBoxMain.BackgroundTransparency = 1
         --
         local UIListLayout_9 = Library:CreateObject("UIListLayout", {
@@ -2845,6 +2846,7 @@ do -- Library
         })
         --
         DropdownMainOutline.BackgroundTransparency = 1
+        DropdownMainOutline.Visible = false
         DropdownMain.BackgroundTransparency = 1
         --
         local UIListLayout_9 = Library:CreateObject("UIListLayout", {
