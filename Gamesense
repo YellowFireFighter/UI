@@ -2327,8 +2327,6 @@ do -- Library
         MultiBoxMainOutline.BackgroundTransparency = 1
         MultiBoxMainOutline.Visible = false
         MultiBoxMain.BackgroundTransparency = 1
-        Library.Objects[MultiBoxMainOutline][3] = true
-        Library.Objects[MultiBoxMain][3] = true
         --
         local UIListLayout_9 = Library:CreateObject("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder,
@@ -2563,15 +2561,14 @@ do -- Library
                 end
                 --
                 MultiBox.Open = not MultiBox.Open
+                if MultiBox.Open then MultiBox:Update() end
             end
             --
             function MultiBox:Update()
+                if not MultiBox.Open then return end
                 MultiBoxMainOutline.Size = UDim2.new(0, MultiBoxOutline_5.AbsoluteSize.X, 0, MultiBoxMainOutline.AbsoluteSize.Y)
                 MultiBoxMainOutline.Position = UDim2.new(0, MultiBoxOutline_5.AbsolutePosition.X, 0, ((MultiBoxOutline_5.AbsolutePosition.Y + MultiBoxOutline_5.AbsoluteSize.Y) + GuiService:GetGuiInset().Y + 2))
-                --
-                if MultiBox.Open then
-                    MultiBoxMainOutline.Visible = Library:ScrollingCheck(Options.Parent, MultiBoxChecker)
-                end
+                MultiBoxMainOutline.Visible = Library:ScrollingCheck(Options.Parent, MultiBoxChecker)
             end
             --
             MultiBox:Update()
@@ -2850,9 +2847,6 @@ do -- Library
         DropdownMainOutline.BackgroundTransparency = 1
         DropdownMainOutline.Visible = false
         DropdownMain.BackgroundTransparency = 1
-        Library.Objects[DropdownMainOutline][3] = true
-        Library.Objects[DropdownMain][3] = true
-        local UIListLayout_9 = Library:CreateObject("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder,
             Parent = DropdownMain
         })
@@ -3032,15 +3026,14 @@ do -- Library
                 end
                 --
                 Dropdown.Open = not Dropdown.Open
+                if Dropdown.Open then Dropdown:Update() end
             end
             --
             function Dropdown:Update()
+                if not Dropdown.Open then return end
                 DropdownMainOutline.Size = UDim2.new(0, DropdownOutline_5.AbsoluteSize.X, 0, DropdownMainOutline.AbsoluteSize.Y)
                 DropdownMainOutline.Position = UDim2.new(0, DropdownOutline_5.AbsolutePosition.X, 0, ((DropdownOutline_5.AbsolutePosition.Y + DropdownOutline_5.AbsoluteSize.Y) + GuiService:GetGuiInset().Y + 2))
-                --
-                if Dropdown.Open then
-                    DropdownMainOutline.Visible = Library:ScrollingCheck(Options.Parent, DropdownChecker)
-                end
+                DropdownMainOutline.Visible = Library:ScrollingCheck(Options.Parent, DropdownChecker)
             end
             --
             Dropdown:Update()
