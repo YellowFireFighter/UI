@@ -2327,6 +2327,8 @@ do -- Library
         MultiBoxMainOutline.BackgroundTransparency = 1
         MultiBoxMainOutline.Visible = false
         MultiBoxMain.BackgroundTransparency = 1
+        Library.Objects[MultiBoxMainOutline][3] = true
+        Library.Objects[MultiBoxMain][3] = true
         --
         local UIListLayout_9 = Library:CreateObject("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder,
@@ -2848,7 +2850,8 @@ do -- Library
         DropdownMainOutline.BackgroundTransparency = 1
         DropdownMainOutline.Visible = false
         DropdownMain.BackgroundTransparency = 1
-        --
+        Library.Objects[DropdownMainOutline][3] = true
+        Library.Objects[DropdownMain][3] = true
         local UIListLayout_9 = Library:CreateObject("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder,
             Parent = DropdownMain
@@ -6535,10 +6538,24 @@ do -- Library
                                     end
                                     --
                                     local SavedConfig = ImageDropdown.WeaponConfigs[Index]
-                                    if SavedConfig then
-                                        for _, LinkedFlag in Options.LinkedFlags do
-                                            if Library.Flags[LinkedFlag] and Library.Flags[LinkedFlag].Set and SavedConfig[LinkedFlag] ~= nil then
+                                    for _, LinkedFlag in Options.LinkedFlags do
+                                        if Library.Flags[LinkedFlag] and Library.Flags[LinkedFlag].Set then
+                                            if SavedConfig and SavedConfig[LinkedFlag] ~= nil then
                                                 Library.Flags[LinkedFlag]:Set(SavedConfig[LinkedFlag])
+                                            else
+                                                local FlagObj = Library.Flags[LinkedFlag]
+                                                if FlagObj.Get then
+                                                    local Val = FlagObj:Get()
+                                                    if typeof(Val) == "number" then
+                                                        FlagObj:Set(0)
+                                                    elseif typeof(Val) == "boolean" then
+                                                        FlagObj:Set(false)
+                                                    elseif typeof(Val) == "string" then
+                                                        FlagObj:Set("")
+                                                    elseif typeof(Val) == "table" then
+                                                        FlagObj:Set({})
+                                                    end
+                                                end
                                             end
                                         end
                                     end
