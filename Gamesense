@@ -6650,21 +6650,18 @@ do -- Library
                     end
                     --
                     function ImageDropdown:Update()
+                        if not ImageDropdown.Open then return end
                         DropdownMainOutline.Size = UDim2.new(0, DropdownImageOutline.AbsoluteSize.X, 0, DropdownMainOutline.AbsoluteSize.Y)
                         DropdownMainOutline.Position = UDim2.new(0, DropdownImageOutline.AbsolutePosition.X, 0, ((DropdownImageOutline.AbsolutePosition.Y + DropdownImageOutline.AbsoluteSize.Y) + GuiService:GetGuiInset().Y + 2))
                     end
 
                     function ImageDropdown:GetFlag(Weapon, Flag, Default)
                         local Config = self.WeaponConfigs[Weapon]
-                        if Config and Config[Flag] ~= nil then
-                            local Val = Config[Flag]
-                            if typeof(Val) == "number" and Val ~= 0 then return Val end
-                            if typeof(Val) == "table" and #Val > 0 then return Val end
-                            if typeof(Val) == "boolean" and Val then return Val end
-                            if typeof(Val) == "string" and Val ~= "" then return Val end
+                        if Config and Config[Flag] ~= nil then return Config[Flag] end
+                        if Weapon ~= "Global" then
+                            local Global = self.WeaponConfigs["Global"]
+                            if Global and Global[Flag] ~= nil then return Global[Flag] end
                         end
-                        local Global = self.WeaponConfigs["Global"]
-                        if Global and Global[Flag] ~= nil then return Global[Flag] end
                         return Default
                     end
                     --
@@ -6678,26 +6675,15 @@ do -- Library
                                 end
                             end
                         end
-                        return {Selected = Current, Configs = self.WeaponConfigs}
+                        return {Configs = self.WeaponConfigs}
                     end
                     --
                     function ImageDropdown:Set(Data)
-                        if typeof(Data) ~= "table" or not Data.Selected then return end
+                        if typeof(Data) ~= "table" then return end
                         self.WeaponConfigs = Data.Configs or {}
                         for _, Option in self.AllOptions do
-                            if Option.Name == Data.Selected then
-                                if Option.Active then
-                                    local SavedConfig = self.WeaponConfigs[Data.Selected]
-                                    if SavedConfig then
-                                        for _, LinkedFlag in Options.LinkedFlags do
-                                            if Library.Flags[LinkedFlag] and Library.Flags[LinkedFlag].Set and SavedConfig[LinkedFlag] ~= nil then
-                                                Library.Flags[LinkedFlag]:Set(SavedConfig[LinkedFlag])
-                                            end
-                                        end
-                                    end
-                                else
-                                    Option:Activate()
-                                end
+                            if Option.Name == "Global" then
+                                Option:Activate()
                                 break
                             end
                         end
