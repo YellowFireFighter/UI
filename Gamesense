@@ -6648,6 +6648,15 @@ do -- Library
                         DropdownMainOutline.Size = UDim2.new(0, DropdownImageOutline.AbsoluteSize.X, 0, DropdownMainOutline.AbsoluteSize.Y)
                         DropdownMainOutline.Position = UDim2.new(0, DropdownImageOutline.AbsolutePosition.X, 0, ((DropdownImageOutline.AbsolutePosition.Y + DropdownImageOutline.AbsoluteSize.Y) + GuiService:GetGuiInset().Y + 2))
                     end
+
+                    function ImageDropdown:GetFlag(Weapon, Flag, Default)
+                        local Config = self.WeaponConfigs[Weapon]
+                        if not Config then
+                            return Default
+                        end
+
+                        return Config[Flag] ~= nil and Config[Flag] or Default
+                    end
                 end
                 --
                 do -- Dropdown Connections
