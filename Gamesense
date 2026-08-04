@@ -2847,6 +2847,8 @@ do -- Library
         DropdownMainOutline.BackgroundTransparency = 1
         DropdownMainOutline.Visible = false
         DropdownMain.BackgroundTransparency = 1
+        --
+        local UIListLayout_9 = Library:CreateObject("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder,
             Parent = DropdownMain
         })
