@@ -1,3 +1,4 @@
+-- loadstring https://raw.githubusercontent.com/YellowFireFighter/UI/refs/heads/main/Gamesense
 if Library and Library.Unload then
     Library:Unload()
 end
@@ -6176,7 +6177,9 @@ do -- Library
                     Options = {},
                     Default = nil,
                     Flag = Library:NewFlag(),
-                    Callback = function() end
+                    Callback = function() end,
+                    SingleSelect = false,
+                    LinkedFlags = {},
                 }, Options or {})
                 --
                 local ImageDropdown = {
@@ -6187,6 +6190,8 @@ do -- Library
                     Scrollable = false,
                     Hiding = false,
                     ContentLength = Library:GetTableLength(Options.Options),
+                    WeaponConfigs = {},
+                    PreviousWeapon = nil,
                 }
                 --
                 Tab.DropdownSectionEnabled = true
@@ -6285,29 +6290,55 @@ do -- Library
                     Parent = DropdownImageMain
                 })
                 --
-                local ActualToggleButton = Library:Toggle({
-                    Default = false,
-                    Name = "Global",
-                    SectionName = "ToggleHolder",
-                    Parent = ToggleHolder,
-                    Risky = false,
-                    MainUI = Outline,
-                    ZIndex = 2,
-                    TabUI = SideBarMain,
-                    AnchorPoint = Vector2.new(0, 0.5),
-                    Size = UDim2.new(1, 0, 1, 0),
-                    Position = UDim2.new(0, 0, 0.5, 0),
-                    UseToggleOutline = true,
-                    Hidden = false,
-                    Flag = Options.Flag .. "Extra",
-                    Callback = function(State)
-                        if ImageDropdown.CurrentItem then
-                            ImageDropdown.CurrentItem:SetValue(State)
-                            Library.Flags[Options.Flag] = ImageDropdown.CurrentItem
-                            Options.Callback(ImageDropdown.CurrentItem.Name, ImageDropdown.CurrentItem.CurrentValue)
-                        end
-                    end,
-                })
+                local ActualToggleButton = nil
+                if not Options.SingleSelect then
+                    ActualToggleButton = Library:Toggle({
+                        Default = false,
+                        Name = "Global",
+                        SectionName = "ToggleHolder",
+                        Parent = ToggleHolder,
+                        Risky = false,
+                        MainUI = Outline,
+                        ZIndex = 2,
+                        TabUI = SideBarMain,
+                        AnchorPoint = Vector2.new(0, 0.5),
+                        Size = UDim2.new(1, 0, 1, 0),
+                        Position = UDim2.new(0, 0, 0.5, 0),
+                        UseToggleOutline = true,
+                        Hidden = false,
+                        Flag = Options.Flag .. "Extra",
+                        Callback = function(State)
+                            if ImageDropdown.CurrentItem then
+                                ImageDropdown.CurrentItem:SetValue(State)
+                                Library.Flags[Options.Flag] = ImageDropdown.CurrentItem
+                                Options.Callback(ImageDropdown.CurrentItem.Name, ImageDropdown.CurrentItem.CurrentValue)
+                            end
+                        end,
+                    })
+                else
+                    local LabelObject = Library:CreateObject("TextLabel", {
+                        FontFace = Library.UI.NewFont,
+                        TextColor3 = Color3.fromRGB(208, 208, 208),
+                        BorderColor3 = Color3.fromRGB(0, 0, 0),
+                        BackgroundTransparency = 1,
+                        AnchorPoint = Vector2.new(0, 0.5),
+                        Size = UDim2.new(1, 0, 1, 0),
+                        Position = UDim2.new(0, 0, 0.5, 0),
+                        ZIndex = 2,
+                        BorderSizePixel = 0,
+                        TextSize = Library.UI.FontSize,
+                        Text = Options.Default or "",
+                        TextXAlignment = "Left",
+                        Parent = ToggleHolder
+                    })
+                    ActualToggleButton = {
+                        Label = LabelObject,
+                        SetName = function(self, Name)
+                            LabelObject.Text = Name
+                        end,
+                        Set = function() end,
+                    }
+                end
                 --
                 local UIPadding = Library:CreateObject("UIPadding", {
                     PaddingLeft = UDim.new(0, 18),
@@ -6424,22 +6455,39 @@ do -- Library
                     --
                     ButtonMain.BackgroundTransparency = 1
                     --
-                    local ToggleButton = Library:Toggle({
-                        Default = false,
-                        Name = Index,
-                        SectionName = "ImageDropdown",
-                        Parent = ButtonMain,
-                        Risky = false,
-                        MainUI = Outline,
-                        ZIndex = 50,
-                        TabUI = SideBarMain,
-                        AnchorPoint = Vector2.new(0, 0.5),
-                        Position = UDim2.new(0, 15, 0.5, 0),
-                        Hidden = false,
-                        Callback = function(State)
-
-                        end,
-                    })
+                    local ToggleButton = nil
+                    if not Options.SingleSelect then
+                        ToggleButton = Library:Toggle({
+                            Default = false,
+                            Name = Index,
+                            SectionName = "ImageDropdown",
+                            Parent = ButtonMain,
+                            Risky = false,
+                            MainUI = Outline,
+                            ZIndex = 50,
+                            TabUI = SideBarMain,
+                            AnchorPoint = Vector2.new(0, 0.5),
+                            Position = UDim2.new(0, 15, 0.5, 0),
+                            Hidden = false,
+                            Callback = function(State) end,
+                        })
+                    else
+                        local ItemLabel = Library:CreateObject("TextLabel", {
+                            FontFace = Library.UI.NewFont,
+                            TextColor3 = Color3.fromRGB(208, 208, 208),
+                            BorderColor3 = Color3.fromRGB(0, 0, 0),
+                            BackgroundTransparency = 1,
+                            AnchorPoint = Vector2.new(0, 0.5),
+                            Size = UDim2.new(1, -50, 0, 20),
+                            Position = UDim2.new(0, 15, 0.5, 0),
+                            ZIndex = 50,
+                            BorderSizePixel = 0,
+                            TextSize = Library.UI.FontSize,
+                            Text = Index,
+                            TextXAlignment = "Left",
+                            Parent = ButtonMain
+                        })
+                    end
                     --
                     local IconButton = Library:CreateObject("ImageLabel", {
                         BorderColor3 = Color3.fromRGB(0, 0, 0),
@@ -6458,8 +6506,9 @@ do -- Library
                     do -- Functions
                         function DropdownOption:Activate()
                             if not DropdownOption.Active then
-                                if ImageDropdown.CurrentItem ~= nil then
-                                    ImageDropdown.CurrentItem:Deactivate()
+                                local OldItem = ImageDropdown.CurrentItem
+                                if OldItem ~= nil then
+                                    OldItem:Deactivate()
                                 end
                                 --
                                 DropdownOption.Active = true
@@ -6468,6 +6517,31 @@ do -- Library
                                 IconButton.ImageColor3 = Color3.fromRGB(210, 210, 210)
                                 Icon.Image = Value.Icon
                                 ActualToggleButton:SetName(Index)
+                                --
+                                if Options.SingleSelect and #Options.LinkedFlags > 0 then
+                                    if OldItem ~= nil then
+                                        ImageDropdown.WeaponConfigs[OldItem.Name] = ImageDropdown.WeaponConfigs[OldItem.Name] or {}
+                                        for _, LinkedFlag in Options.LinkedFlags do
+                                            if Library.Flags[LinkedFlag] and Library.Flags[LinkedFlag].Get then
+                                                ImageDropdown.WeaponConfigs[OldItem.Name][LinkedFlag] = Library.Flags[LinkedFlag]:Get()
+                                            end
+                                        end
+                                    end
+                                    --
+                                    local SavedConfig = ImageDropdown.WeaponConfigs[Index]
+                                    if SavedConfig then
+                                        for _, LinkedFlag in Options.LinkedFlags do
+                                            if Library.Flags[LinkedFlag] and Library.Flags[LinkedFlag].Set and SavedConfig[LinkedFlag] ~= nil then
+                                                Library.Flags[LinkedFlag]:Set(SavedConfig[LinkedFlag])
+                                            end
+                                        end
+                                    end
+                                end
+                                --
+                                if Options.SingleSelect then
+                                    Library.Flags[Options.Flag] = DropdownOption
+                                    Options.Callback(Index)
+                                end
                             end
                         end
                         --
@@ -6482,9 +6556,9 @@ do -- Library
                             end
                         end
                         --
-                        function DropdownOption:SetValue(Value)
-                            ToggleButton:Set(Value)
-                            DropdownOption.CurrentValue = Value
+                        function DropdownOption:SetValue(Val)
+                            if ToggleButton then ToggleButton:Set(Val) end
+                            DropdownOption.CurrentValue = Val
                         end
                         --
                         function DropdownOption:Get()
@@ -6508,7 +6582,9 @@ do -- Library
                         --
                         Library:Connection(Button_925.MouseButton1Click, function()
                             DropdownOption:Activate()
-                            ActualToggleButton:Set(DropdownOption.CurrentValue)
+                            if not Options.SingleSelect and ActualToggleButton then
+                                ActualToggleButton:Set(DropdownOption.CurrentValue)
+                            end
                         end)
                     end
                     --
