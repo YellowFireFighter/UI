@@ -6647,12 +6647,14 @@ do -- Library
                         end
                         --
                         ImageDropdown.Open = not ImageDropdown.Open
+                        if ImageDropdown.Open then ImageDropdown:Update() end
                     end
                     --
                     function ImageDropdown:Update()
-                        if not ImageDropdown.Open then return end
-                        DropdownMainOutline.Size = UDim2.new(0, DropdownImageOutline.AbsoluteSize.X, 0, DropdownMainOutline.AbsoluteSize.Y)
                         DropdownMainOutline.Position = UDim2.new(0, DropdownImageOutline.AbsolutePosition.X, 0, ((DropdownImageOutline.AbsolutePosition.Y + DropdownImageOutline.AbsoluteSize.Y) + GuiService:GetGuiInset().Y + 2))
+                        if ImageDropdown.Open then
+                            DropdownMainOutline.Size = UDim2.new(0, DropdownImageOutline.AbsoluteSize.X, 0, DropdownMainOutline.AbsoluteSize.Y)
+                        end
                     end
 
                     function ImageDropdown:GetFlag(Weapon, Flag, Default)
