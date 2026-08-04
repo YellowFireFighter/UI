@@ -6196,6 +6196,7 @@ do -- Library
                     ContentLength = Library:GetTableLength(Options.Options),
                     WeaponConfigs = {},
                     PreviousWeapon = nil,
+                    AllOptions = {},
                 }
                 --
                 Tab.DropdownSectionEnabled = true
@@ -6429,6 +6430,7 @@ do -- Library
                         CurrentValue = false,
                         Name = Index,
                     }
+                    ImageDropdown.AllOptions[#ImageDropdown.AllOptions + 1] = DropdownOption
                     --
                     local ButtonMain = Library:CreateObject("Frame", {
                         Name = "DropdownMain",
@@ -6557,7 +6559,7 @@ do -- Library
                                 end
                                 --
                                 if Options.SingleSelect then
-                                    Library.Flags[Options.Flag] = DropdownOption
+                                    Library.Flags[Options.Flag] = ImageDropdown
                                     Options.Callback(Index)
                                 end
                             end
@@ -6612,6 +6614,9 @@ do -- Library
                     --
                     Library:Fade(false, Library:GetObjectsTable(DropdownMainOutline, true), DropdownMainOutline, 0.1)
                 end
+                if Options.SingleSelect then
+                    Library.Flags[Options.Flag] = ImageDropdown
+                end
                 --
                 do -- Functions
                     function ImageDropdown:Toggle(Fast)
@@ -6651,11 +6656,51 @@ do -- Library
 
                     function ImageDropdown:GetFlag(Weapon, Flag, Default)
                         local Config = self.WeaponConfigs[Weapon]
-                        if not Config then
-                            return Default
+                        if Config and Config[Flag] ~= nil then
+                            local Val = Config[Flag]
+                            if typeof(Val) == "number" and Val ~= 0 then return Val end
+                            if typeof(Val) == "table" and #Val > 0 then return Val end
+                            if typeof(Val) == "boolean" and Val then return Val end
+                            if typeof(Val) == "string" and Val ~= "" then return Val end
                         end
-
-                        return Config[Flag] ~= nil and Config[Flag] or Default
+                        local Global = self.WeaponConfigs["Global"]
+                        if Global and Global[Flag] ~= nil then return Global[Flag] end
+                        return Default
+                    end
+                    --
+                    function ImageDropdown:Get()
+                        local Current = self.CurrentItem and self.CurrentItem.Name or Options.Default
+                        if self.CurrentItem then
+                            self.WeaponConfigs[Current] = self.WeaponConfigs[Current] or {}
+                            for _, LinkedFlag in Options.LinkedFlags do
+                                if Library.Flags[LinkedFlag] and Library.Flags[LinkedFlag].Get then
+                                    self.WeaponConfigs[Current][LinkedFlag] = Library.Flags[LinkedFlag]:Get()
+                                end
+                            end
+                        end
+                        return {Selected = Current, Configs = self.WeaponConfigs}
+                    end
+                    --
+                    function ImageDropdown:Set(Data)
+                        if typeof(Data) ~= "table" or not Data.Selected then return end
+                        self.WeaponConfigs = Data.Configs or {}
+                        for _, Option in self.AllOptions do
+                            if Option.Name == Data.Selected then
+                                if Option.Active then
+                                    local SavedConfig = self.WeaponConfigs[Data.Selected]
+                                    if SavedConfig then
+                                        for _, LinkedFlag in Options.LinkedFlags do
+                                            if Library.Flags[LinkedFlag] and Library.Flags[LinkedFlag].Set and SavedConfig[LinkedFlag] ~= nil then
+                                                Library.Flags[LinkedFlag]:Set(SavedConfig[LinkedFlag])
+                                            end
+                                        end
+                                    end
+                                else
+                                    Option:Activate()
+                                end
+                                break
+                            end
+                        end
                     end
                 end
                 --
