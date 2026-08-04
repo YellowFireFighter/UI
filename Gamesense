@@ -6698,6 +6698,8 @@ do -- Library
                         ImageDropdown:Toggle()
                     end)
                 end
+
+                return ImageDropdown
             end
             --
             function Sections:Dropdown(Options)
