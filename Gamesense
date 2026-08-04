@@ -2327,6 +2327,8 @@ do -- Library
         MultiBoxMainOutline.BackgroundTransparency = 1
         MultiBoxMainOutline.Visible = false
         MultiBoxMain.BackgroundTransparency = 1
+        Library.Objects[MultiBoxMainOutline] = {MultiBoxMainOutline, Library.Objects[MultiBoxMainOutline][2], true}
+        Library.Objects[MultiBoxMain] = {MultiBoxMain, Library.Objects[MultiBoxMain][2], true}
         --
         local UIListLayout_9 = Library:CreateObject("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder,
@@ -2847,6 +2849,8 @@ do -- Library
         DropdownMainOutline.BackgroundTransparency = 1
         DropdownMainOutline.Visible = false
         DropdownMain.BackgroundTransparency = 1
+        Library.Objects[DropdownMainOutline] = {DropdownMainOutline, Library.Objects[DropdownMainOutline][2], true}
+        Library.Objects[DropdownMain] = {DropdownMain, Library.Objects[DropdownMain][2], true}
         --
         local UIListLayout_9 = Library:CreateObject("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder,
@@ -6184,6 +6188,7 @@ do -- Library
                     Callback = function() end,
                     SingleSelect = false,
                     LinkedFlags = {},
+                    OverrideFlag = nil,
                 }, Options or {})
                 --
                 local ImageDropdown = {
@@ -6413,7 +6418,10 @@ do -- Library
                 })
                 --
                 DropdownMainOutline.BackgroundTransparency = 1
+                DropdownMainOutline.Visible = false
                 DropdownMain.BackgroundTransparency = 1
+                Library.Objects[DropdownMainOutline] = {DropdownMainOutline, Library.Objects[DropdownMainOutline][2], true}
+                Library.Objects[DropdownMain] = {DropdownMain, Library.Objects[DropdownMain][2], true}
                 --
                 local UIListLayout_9 = Library:CreateObject("UIListLayout", {
                     SortOrder = Enum.SortOrder.LayoutOrder,
@@ -6524,7 +6532,7 @@ do -- Library
                                 Icon.Image = Value.Icon
                                 ActualToggleButton:SetName(Index)
                                 --
-                                if Options.SingleSelect and #Options.LinkedFlags > 0 then
+                                if Options.SingleSelect then
                                     if OldItem ~= nil then
                                         ImageDropdown.WeaponConfigs[OldItem.Name] = ImageDropdown.WeaponConfigs[OldItem.Name] or {}
                                         for _, LinkedFlag in Options.LinkedFlags do
@@ -6541,20 +6549,20 @@ do -- Library
                                                 Library.Flags[LinkedFlag]:Set(SavedConfig[LinkedFlag])
                                             else
                                                 local FlagObj = Library.Flags[LinkedFlag]
-                                                if FlagObj.Get then
+                                                if FlagObj and FlagObj.Get then
                                                     local Val = FlagObj:Get()
-                                                    if typeof(Val) == "number" then
-                                                        FlagObj:Set(0)
-                                                    elseif typeof(Val) == "boolean" then
-                                                        FlagObj:Set(false)
-                                                    elseif typeof(Val) == "string" then
-                                                        FlagObj:Set("")
-                                                    elseif typeof(Val) == "table" then
-                                                        FlagObj:Set({})
-                                                    end
+                                                    if typeof(Val) == "number" then FlagObj:Set(0)
+                                                    elseif typeof(Val) == "boolean" then FlagObj:Set(false)
+                                                    elseif typeof(Val) == "string" then FlagObj:Set("")
+                                                    elseif typeof(Val) == "table" then FlagObj:Set({}) end
                                                 end
                                             end
                                         end
+                                    end
+                                    -- Sync Override toggle
+                                    if Options.OverrideFlag and Library.Flags[Options.OverrideFlag] then
+                                        local OverrideState = SavedConfig and SavedConfig["_Override"] or false
+                                        Library.Flags[Options.OverrideFlag]:Set(OverrideState)
                                     end
                                 end
                                 --
@@ -6659,12 +6667,23 @@ do -- Library
 
                     function ImageDropdown:GetFlag(Weapon, Flag, Default)
                         local Config = self.WeaponConfigs[Weapon]
-                        if Config and Config[Flag] ~= nil then return Config[Flag] end
-                        if Weapon ~= "Global" then
+                        local Override = Config and Config["_Override"]
+                        if Override and Config[Flag] ~= nil then return Config[Flag] end
+                        if not Override or Weapon == "Global" then
                             local Global = self.WeaponConfigs["Global"]
                             if Global and Global[Flag] ~= nil then return Global[Flag] end
                         end
                         return Default
+                    end
+                    --
+                    function ImageDropdown:SetOverride(Weapon, State)
+                        self.WeaponConfigs[Weapon] = self.WeaponConfigs[Weapon] or {}
+                        self.WeaponConfigs[Weapon]["_Override"] = State
+                    end
+                    --
+                    function ImageDropdown:GetOverride(Weapon)
+                        local Config = self.WeaponConfigs[Weapon]
+                        return Config and Config["_Override"] or false
                     end
                     --
                     function ImageDropdown:Get()
