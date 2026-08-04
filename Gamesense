@@ -238,13 +238,26 @@ do -- Library
         --
         for Index, Value in Library.Flags do
             if Value.Get and not string.find(Index, "_Status") then
-                if typeof(Value:Get()) == "table" and Value:Get().Color and Value:Get().Transparency then
-                    local Transparency = Value:Get().Transparency
-                    local Hue, Saturation, Value = Value:Get().Color:ToHSV()
-                    --
-                    Config[Index] = {Hue, Saturation, Value, Transparency}
+                -- Skip linked flags owned by ImageDropdowns
+                local Skip = false
+                if Value.LinkedFlagSet then
+                    Skip = false
                 else
-                    Config[Index] = Value:Get()
+                    for _, OtherFlag in Library.Flags do
+                        if typeof(OtherFlag) == "table" and OtherFlag.LinkedFlagSet and OtherFlag.LinkedFlagSet[Index] then
+                            Skip = true
+                            break
+                        end
+                    end
+                end
+                if not Skip then
+                    if typeof(Value:Get()) == "table" and Value:Get().Color and Value:Get().Transparency then
+                        local Transparency = Value:Get().Transparency
+                        local Hue, Saturation, Value = Value:Get().Color:ToHSV()
+                        Config[Index] = {Hue, Saturation, Value, Transparency}
+                    else
+                        Config[Index] = Value:Get()
+                    end
                 end
             end
         end
@@ -2338,13 +2351,17 @@ do -- Library
         do -- Functions
             function MultiBox:Set(Values)
                 for Index, Item in MultiBox.AllItems do
-                    if not table.find(Values, Index) then
-                        MultiBox.Items[Index] = false
+                    if table.find(Values, Index) then
+                        if not MultiBox.Items[Index] then
+                            MultiBox.Items[Index] = true
+                            Item:Activate()
+                        end
                     else
-                        MultiBox.Items[Index] = true
+                        if MultiBox.Items[Index] then
+                            MultiBox.Items[Index] = false
+                            Item:Deactivate()
+                        end
                     end
-                    --        
-                    Item:Toggle()
                 end
             end
             --
@@ -6202,8 +6219,14 @@ do -- Library
                     WeaponConfigs = {},
                     PreviousWeapon = nil,
                     AllOptions = {},
+                    LinkedFlagSet = {},
                 }
-                --
+                for _, Flag in Options.LinkedFlags do
+                    ImageDropdown.LinkedFlagSet[Flag] = true
+                end
+                if Options.OverrideFlag then
+                    ImageDropdown.LinkedFlagSet[Options.OverrideFlag] = true
+                end
                 Tab.DropdownSectionEnabled = true
                 Tab.Sides.Left.Sizes = 70
                 --
@@ -6666,10 +6689,22 @@ do -- Library
                     end
 
                     function ImageDropdown:GetFlag(Weapon, Flag, Default)
+                        -- Current weapon: always read live flags
+                        if self.CurrentItem and self.CurrentItem.Name == Weapon then
+                            if Library.Flags[Flag] and Library.Flags[Flag].Get then
+                                return Library.Flags[Flag]:Get()
+                            end
+                        end
                         local Config = self.WeaponConfigs[Weapon]
                         local Override = Config and Config["_Override"]
                         if Override and Config[Flag] ~= nil then return Config[Flag] end
-                        if not Override or Weapon == "Global" then
+                        -- Fallback to Global
+                        if not Override and Weapon ~= "Global" then
+                            if self.CurrentItem and self.CurrentItem.Name == "Global" then
+                                if Library.Flags[Flag] and Library.Flags[Flag].Get then
+                                    return Library.Flags[Flag]:Get()
+                                end
+                            end
                             local Global = self.WeaponConfigs["Global"]
                             if Global and Global[Flag] ~= nil then return Global[Flag] end
                         end
