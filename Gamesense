@@ -22,12 +22,12 @@ local Camera = Workspace:FindFirstChildWhichIsA("Camera")
 local Viewport = Camera.ViewportSize
 --
 do -- Folders
-    if not isfolder("gamesnooze") then
-        makefolder("gamesnooze")
+    if not isfolder("bloxsense") then
+        makefolder("bloxsense")
     end
     --
-    if not isfolder("gamesnooze/Configs") then
-        makefolder("gamesnooze/Configs")
+    if not isfolder("bloxsense/Configs") then
+        makefolder("bloxsense/Configs")
     end
 end
 --
@@ -45,10 +45,10 @@ do -- Library
         UID = "1",
         UnsafeMode = false,
         InitTime = os.clock(),
-        Folder = "gamesnooze",
-        ConfigFolder = "gamesnooze/Configs",
+        Folder = "bloxsense",
+        ConfigFolder = "bloxsense/Configs",
         UI = {
-            Name = "gamesnooze",
+            Name = "bloxsense",
             CloseBind = Enum.KeyCode.Insert,
             SectionResizeIncrements = 1,
             WatermarkRefreshRate = 1,
@@ -317,8 +317,8 @@ do -- Library
     end
     --
     function Library:UpdateConfigList(List, Type)
-        for _, File in listfiles("gamesnooze/Configs") do
-            local FileName = File:gsub("\\", "/"):gsub("gamesnooze/Configs/", ""):gsub(".cfg", "")
+        for _, File in listfiles("bloxsense/Configs") do
+            local FileName = File:gsub("\\", "/"):gsub("bloxsense/Configs/", ""):gsub(".cfg", "")
             --
             if Type == "Remove" then
                 List:RemoveValue(FileName)
@@ -2530,6 +2530,8 @@ do -- Library
                 end
             end
             --
+            Library:Fade(false, Library:GetObjectsTable(MultiBoxMainOutline, true), MultiBoxMainOutline, 0)
+            --
             function MultiBox:Toggle(Fast)
                 local Fast = Fast or false
                 local OldValues = Library.Objects[MultiBoxMainOutline]
@@ -2994,6 +2996,8 @@ do -- Library
                     Item:Activate()
                 end
             end
+            --
+            Library:Fade(false, Library:GetObjectsTable(DropdownMainOutline, true), DropdownMainOutline, 0)
             --
             function Dropdown:Toggle(Fast)
                 local Fast = Fast or false
@@ -4774,7 +4778,7 @@ do -- Library
     --
     function Library:Window(Options)
         Options = Library:Validate({
-            Name = "gamesnooze",
+            Name = "bloxsense",
             Size = UDim2.new(0, 700, 0, 612),
             MinResize = UDim2.new(0, 500, 0, 400),
             MaxResize = UDim2.new(0, 10000, 0, 10000),
@@ -6931,7 +6935,7 @@ do -- Library
                 FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
                 TextColor3 = Color3.fromRGB(208, 208, 208),
                 BorderColor3 = Color3.fromRGB(0, 0, 0),
-                Text = "gamesnooze",
+                Text = "bloxsense",
                 Name = "Text",
                 Size = UDim2.new(1, 0, 1, 0),
                 BackgroundTransparency = 1,
@@ -6973,7 +6977,7 @@ do -- Library
             --
             local R, G, B = Library.Theme.Default.Accent.R * 255, Library.Theme.Default.Accent.G * 255, Library.Theme.Default.Accent.B * 255
             --
-            Library:UpdateWatermark(("game<font color='rgb(%d, %d, %d)'>snooze</font>  <font color='rgb(%d, %d, %d)'>%s</font> <font size='10'>FPS</font>  %s"):format(R, G, B, R, G, B, "60", os.date("%X")))
+            Library:UpdateWatermark(("bloxsense<font color='rgb(%d, %d, %d)'>.pub</font>  <font color='rgb(%d, %d, %d)'>%s</font> <font size='10'>FPS</font>  %s"):format(R, G, B, R, G, B, "60", os.date("%X")))
             --
             do -- Connections
                 Library:Connection(RunService.PostSimulation, function()
@@ -6984,7 +6988,7 @@ do -- Library
                         Watermark.Tick = tick()
                         --
                         if (tick() - Watermark.RefreshTick) > Library.UI.WatermarkRefreshRate then
-                            Library:UpdateWatermark(("game<font color='rgb(%d, %d, %d)'>snooze</font>  <font color='rgb(%d, %d, %d)'>%s</font> <font size='10'>FPS</font>  %s"):format(R, G, B, R, G, B, FPS, os.date("%X")))
+                            Library:UpdateWatermark(("bloxsense<font color='rgb(%d, %d, %d)'>.pub</font>  <font color='rgb(%d, %d, %d)'>%s</font> <font size='10'>FPS</font>  %s"):format(R, G, B, R, G, B, FPS, os.date("%X")))
                             --
                             Watermark.RefreshTick = tick()
                         end
