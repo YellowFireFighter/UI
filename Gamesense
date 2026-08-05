@@ -2390,7 +2390,7 @@ do -- Library
                     Hovering = false,
                 }
                 --
-                MultiBox.Items[Value] = Item
+                MultiBox.Items[Value] = false
                 MultiBox.AllItems[Value] = Item
                 --
                 local Inactive = Library:CreateObject("TextLabel", {
@@ -3100,7 +3100,7 @@ do -- Library
                 end
                 --
                 if CurrentX ~= StartingX or CurrentY ~= StartingY then
-                    Dropdown:Toggle(true)
+                    if Dropdown.Open then Dropdown:Toggle(true) end
                 end
                 --
                 StartingX = CurrentX
@@ -3151,6 +3151,14 @@ do -- Library
         end
         --
         Dropdown:Toggle(true)
+        -- Close dropdown when parent tab becomes invisible
+        if Options.MainUI then
+            Library:Connection(Options.MainUI:GetPropertyChangedSignal("Visible"), function()
+                if not Options.MainUI.Visible and Dropdown.Open then
+                    Dropdown:Toggle(true)
+                end
+            end)
+        end
         --
         return Dropdown
     end
@@ -5263,17 +5271,13 @@ do -- Library
                 --
                 function Tab:Activate()
                     if not Tab.Active then
-                        --
                         if Window.CurrentTab ~= nil then
                             Window.CurrentTab:Deactivate()
                         end
-                        --
                         Tab.Active = true
                         Tab:MoveSides(true)
-                        --
                         Library:TweenObject(Icon, TweenInfo.new(Library.UI.TweenSpeed, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(210, 210, 210)})
                         Outline_3.Visible = true
-                        --
                         Window.CurrentTab = Tab
                         Outline:SetAttribute("g", table.find(Window.Tabs, Tab))
                     end
@@ -5285,6 +5289,18 @@ do -- Library
                         Tab.Hovering = false
                         Outline_3.Visible = false
                         Library:TweenObject(Icon, TweenInfo.new(Library.UI.TweenSpeed, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(90, 90, 90)})
+                        -- Close open color pickers and keybind modes
+                        pcall(function()
+                            if Library.UI.CurrentSelectedColorPicker then
+                                Library.UI.CurrentSelectedColorPicker.ColorPicker:RemoveFrame(true)
+                            end
+                            if Library.UI.CurrentSelectedColorPickerExtra then
+                                Library.UI.CurrentSelectedColorPickerExtra.ColorPicker:RemoveFrame(true)
+                            end
+                            if Library.UI.CurrentSelectedKeybindMode then
+                                Library.UI.CurrentSelectedKeybindMode = nil
+                            end
+                        end)
                         --
                         Tab:MoveSides(false)
                     end
@@ -6736,6 +6752,11 @@ do -- Library
                     function ImageDropdown:Set(Data)
                         if typeof(Data) ~= "table" then return end
                         self.WeaponConfigs = Data.Configs or {}
+                        -- Clear current item so Activate doesn't save over our loaded config
+                        if self.CurrentItem then
+                            self.CurrentItem.Active = false
+                            self.CurrentItem = nil
+                        end
                         for _, Option in self.AllOptions do
                             if Option.Name == "Global" then
                                 Option:Activate()
