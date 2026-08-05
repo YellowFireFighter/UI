@@ -2352,13 +2352,11 @@ do -- Library
             function MultiBox:Set(Values)
                 for Index, Item in MultiBox.AllItems do
                     if table.find(Values, Index) then
-                        if not MultiBox.Items[Index] then
-                            MultiBox.Items[Index] = true
+                        if not Item.Active then
                             Item:Activate()
                         end
                     else
-                        if MultiBox.Items[Index] then
-                            MultiBox.Items[Index] = false
+                        if Item.Active then
                             Item:Deactivate()
                         end
                     end
@@ -2393,6 +2391,7 @@ do -- Library
                 }
                 --
                 MultiBox.Items[Value] = Item
+                MultiBox.AllItems[Value] = Item
                 --
                 local Inactive = Library:CreateObject("TextLabel", {
                     FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
