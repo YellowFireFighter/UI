@@ -2683,8 +2683,8 @@ do -- Library
             MultiBox:SetVisible(false)
         end
         --
+        MultiBox.Open = true
         MultiBox:Toggle(true)
-        --
         return MultiBox
     end
     --
@@ -3150,6 +3150,7 @@ do -- Library
             Dropdown:SetVisible(false)
         end
         --
+        Dropdown.Open = true
         Dropdown:Toggle(true)
         -- Close dropdown when parent tab becomes invisible
         if Options.MainUI then
@@ -4212,6 +4213,7 @@ do -- Library
         local List = {
             CurrentValue = nil,
             CurrentValueName = nil,
+            Values = {},
         }
         --
         Library.Flags[Options.Flag] = List
@@ -4346,6 +4348,7 @@ do -- Library
                     Active = false,
                     Hovering = false,
                 }
+                List.Values[Value] = ListValue
                 --
                 local InactiveValue = Library:CreateObject("Frame", {
                     Name = Value .. "1",
@@ -4497,6 +4500,17 @@ do -- Library
                     if Object.Name == Value .. "1" then
                         Object:Destroy()
                     end
+                end
+                List.Values[Value] = nil
+            end
+            --
+            function List:Get()
+                return List.CurrentValueName
+            end
+            --
+            function List:Set(Name)
+                if Name and List.Values[Name] and List.Values[Name].Activate then
+                    List.Values[Name]:Activate()
                 end
             end
             --
